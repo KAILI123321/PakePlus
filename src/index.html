@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>鲜榴莲税费计算器</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        *{box-sizing:border-box;font-family:system-ui,sans-serif;margin:0;padding:0;}
+        body{max-width:700px;margin:15px auto;padding:12px;background:#f7f7f7;}
+        h2{text-align:center;margin-bottom:16px;color:#222;}
+        .card{background:#fff;padding:14px;border-radius:10px;margin-bottom:14px;box-shadow:0 1px 4px #00000015;}
+        .card h3{margin-bottom:10px;color:#333;}
+        .row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0;}
+        input{width:100%;padding:10px;border:1px solid #ccc;border-radius:6px;font-size:15px;}
+        .result-item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #ddd;}
+        .total-block{background:#fffbe6;padding:12px;border-radius:8px;}
+        button{width:100%;padding:11px;margin:6px 0;border:none;border-radius:7px;font-size:15px;cursor:pointer;}
+        .btn-blue{background:#2563eb;color:white;}
+        .btn-green{background:#16a34a;color:white;}
+        .btn-red{background:#dc2626;color:white;}
+    </style>
+</head>
+<body>
+<h2>🍈鲜榴莲税费计算器</h2>
+
+<div class="card">
+    <h3>等级‑A</h3>
+    <div class="row">
+        <input type="number" step="0.01" id="aNet" placeholder="净重 kg" oninput="calcAll()">
+        <input type="number" step="0.01" id="aGross" placeholder="毛重 kg" oninput="calcAll()">
+    </div>
+    <div class="row">
+        <input type="number" id="aQty" placeholder="件数" oninput="calcAll()">
+        <input type="number" step="0.01" id="aPrice" placeholder="单价 元/kg" oninput="calcAll()">
+    </div>
+    <div class="result-item">
+        <span>A级税费</span>
+        <strong id="aTax">0.00 元</strong>
+    </div>
+</div>
+
+<div class="card">
+    <h3>等级‑B</h3>
+    <div class="row">
+        <input type="number" step="0.01" id="bNet" placeholder="净重 kg" oninput="calcAll()">
+        <input type="number" step="0.01" id="bGross" placeholder="毛重 kg" oninput="calcAll()">
+    </div>
+    <div class="row">
+        <input type="number" id="bQty" placeholder="件数" oninput="calcAll()">
+        <input type="number" step="0.01" id="bPrice" placeholder="单价 元/kg" oninput="calcAll()">
+    </div>
+    <div class="result-item">
+        <span>B级税费</span>
+        <strong id="bTax">0.00 元</strong>
+    </div>
+</div>
+
+<div class="card">
+    <h3>等级‑C</h3>
+    <div class="row">
+        <input type="number" step="0.01" id="cNet" placeholder="净重 kg" oninput="calcAll()">
+        <input type="number" step="0.01" id="cGross" placeholder="毛重 kg" oninput="calcAll()">
+    </div>
+    <div class="row">
+        <input type="number" id="cQty" placeholder="件数" oninput="calcAll()">
+        <input type="number" step="0.01" id="cPrice" placeholder="单价 元/kg" oninput="calcAll()">
+    </div>
+    <div class="result-item">
+        <span>C级税费</span>
+        <strong id="cTax">0.00 元</strong>
+    </div>
+</div>
+
+<div class="card total-block">
+    <h3>📊汇总结果</h3>
+    <div class="result-item"><span>总净重</span><strong id="sumNet">0.00 kg</strong></div>
+    <div class="result-item"><span>总毛重</span><strong id="sumGross">0.00 kg</strong></div>
+    <div class="result-item"><span>总件数</span><strong id="sumQty">0</strong></div>
+    <div class="result-item"><span>总税费</span><strong id="sumTax">0.00 元</strong></div>
+</div>
+
+<button class="btn-green" onclick="exportExcel()">导出Excel报表</button>
+<button class="btn-blue" onclick="saveLocal()">保存数据</button>
+<button class="btn-red" onclick="clearAll()">清空全部</button>
+
+<script>
+function getVal(id){
+    return Number(document.getElementById(id).value||0);
+}
+function fmt2(n){
+    return n.toFixed(2);
+}
+
+function calcAll(){
+    //A级
+    const aNet = getVal('aNet');
+    const aGross = getVal('aGross');
+    const aQty = getVal('aQty');
+    const aPrice = getVal('aPrice');
+    const aTax = aNet * aPrice * 0.09;
+    document.getElementById('aTax').innerText = fmt2(aTax)+' 元';
+
+    //B级
+    const bNet = getVal('bNet');
+    const bGross = getVal('bGross');
+    const bQty = getVal('bQty');
+    const bPrice = getVal('bPrice');
+    const bTax = bNet * bPrice * 0.09;
+    document.getElementById('bTax').innerText = fmt2(bTax)+' 元';
+
+    //C级
+    const cNet = getVal('cNet');
+    const cGross = getVal('cGross');
+    const cQty = getVal('cQty');
+    const cPrice = getVal('cPrice');
+    const cTax = cNet * cPrice * 0.09;
+    document.getElementById('cTax').innerText = fmt2(cTax)+' 元';
+
+    //合计
+    const sumNet = aNet + bNet + cNet;
+    const sumGross = aGross + bGross + cGross;
+    const sumQty = aQty + bQty + cQty;
+    const sumTax = aTax + bTax + cTax;
+
+    document.getElementById('sumNet').innerText = fmt2(sumNet)+' kg';
+    document.getElementById('sumGross').innerText = fmt2(sumGross)+' kg';
+    document.getElementById('sumQty').innerText = sumQty;
+    document.getElementById('sumTax').innerText = fmt2(sumTax)+' 元';
+}
+
+function saveLocal(){
+    const data = {
+        aNet:getVal('aNet'),aGross:getVal('aGross'),aQty:getVal('aQty'),aPrice:getVal('aPrice'),
+        bNet:getVal('bNet'),bGross:getVal('bGross'),bQty:getVal('bQty'),bPrice:getVal('bPrice'),
+        cNet:getVal('cNet'),cGross:getVal('cGross'),cQty:getVal('cQty'),cPrice:getVal('cPrice'),
+    };
+    localStorage.setItem('durianData',JSON.stringify(data));
+    alert("数据已本地保存");
+}
+
+window.onload=()=>{
+    const str = localStorage.getItem('durianData');
+    if(str){
+        const d = JSON.parse(str);
+        document.getElementById('aNet').value=d.aNet||'';
+        document.getElementById('aGross').value=d.aGross||'';
+        document.getElementById('aQty').value=d.aQty||'';
+        document.getElementById('aPrice').value=d.aPrice||'';
+
+        document.getElementById('bNet').value=d.bNet||'';
+        document.getElementById('bGross').value=d.bGross||'';
+        document.getElementById('bQty').value=d.bQty||'';
+        document.getElementById('bPrice').value=d.bPrice||'';
+
+        document.getElementById('cNet').value=d.cNet||'';
+        document.getElementById('cGross').value=d.cGross||'';
+        document.getElementById('cQty').value=d.cQty||'';
+        document.getElementById('cPrice').value=d.cPrice||'';
+        calcAll();
+    }
+}
+
+function clearAll(){
+    if(!confirm("确认清空所有输入？"))return;
+    localStorage.removeItem('durianData');
+    document.querySelectorAll('input').forEach(el=>el.value='');
+    calcAll();
+}
+
+function exportExcel(){
+    const aNet = getVal('aNet'),aGross=getVal('aGross'),aQty=getVal('aQty'),aPrice=getVal('aPrice'),aTax=aNet*aPrice*0.09;
+    const bNet = getVal('bNet'),bGross=getVal('bGross'),bQty=getVal('bQty'),bPrice=getVal('bPrice'),bTax=bNet*bPrice*0.09;
+    const cNet = getVal('cNet'),cGross=getVal('cGross'),cQty=getVal('cQty'),cPrice=getVal('cPrice'),cTax=cNet*cPrice*0.09;
+    const sumNet=aNet+bNet+cNet,sumGross=aGross+bGross+cGross,sumQty=aQty+bQty+cQty,sumTax=aTax+bTax+cTax;
+
+    const arr = [
+        {等级:"A",净重kg:aNet,毛重kg:aGross,件数:aQty,单价元每kg:aPrice,税费元:aTax},
+        {等级:"B",净重kg:bNet,毛重kg:bGross,件数:bQty,单价元每kg:bPrice,税费元:bTax},
+        {等级:"C",净重kg:cNet,毛重kg:cGross,件数:cQty,单价元每kg:cPrice,税费元:cTax},
+        {等级:"合计",净重kg:sumNet,毛重kg:sumGross,件数:sumQty,单价元每kg:"‑",税费元:sumTax},
+    ];
+    const ws = XLSX.utils.json_to_sheet(arr);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,"榴莲统计");
+    XLSX.writeFile(wb,"鲜榴莲统计报表.xlsx");
+}
+</script>
+</body>
+</html>
